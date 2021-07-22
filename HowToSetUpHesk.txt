@@ -7,11 +7,11 @@
 step [1] :Build the vm in Hyper-v:
 
 $cred = Get-Credential
-Enter-PSSession -ComputerName 10.10.11.240 -Credential $cred
+Enter-PSSession -ComputerName <computername> -Credential $cred
 New-VM -Name 6WHESK01 -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\6WHESK-TEST.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch Hyper-V Network
 Add-VMScsiController -VMName 6WHESK01
 Add-VMDvdDrive -VMName 6WHESK01 -ControllerNumber 1 -ControllerLocation 0 -Path C:\ClusterStorage\Volume1\_ISO\ubuntu-20.04.1-desktop-amd64.ISO
-Set-VMNetworkAdapterVlan -VMName 6WHESK01 -Access -VlanId 11
+Set-VMNetworkAdapterVlan -VMName 6WHESK01 -Access -VlanId <id>
 Start-VM -Name 6WHESK01
 Exit-PSSession
 
