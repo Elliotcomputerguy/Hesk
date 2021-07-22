@@ -8,11 +8,11 @@ step [1] :Build the vm in Hyper-v:
 
 $cred = Get-Credential
 Enter-PSSession -ComputerName <computername> -Credential $cred
-New-VM -Name 6WHESK01 -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\6WHESK-TEST.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch Hyper-V Network
-Add-VMScsiController -VMName 6WHESK01
+New-VM -Name <vmname> -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\6WHESK-TEST.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch "switchname"
+Add-VMScsiController -VMName <vmname>
 Add-VMDvdDrive -VMName 6WHESK01 -ControllerNumber 1 -ControllerLocation 0 -Path C:\ClusterStorage\Volume1\_ISO\ubuntu-20.04.1-desktop-amd64.ISO
-Set-VMNetworkAdapterVlan -VMName 6WHESK01 -Access -VlanId <id>
-Start-VM -Name 6WHESK01
+Set-VMNetworkAdapterVlan -VMName <vmname> -Access -VlanId <id>
+Start-VM -Name <vmname>
 Exit-PSSession
 
 step [2] :Install Apache2:
@@ -32,14 +32,15 @@ step [4] :Install mysql-server and create hesk DB and user for DB:
 
 sudo apt install mysql-server
 sudo mysql_secure_installation
+follow prompts
 sudo systemctl status mysql
 
 step [5] :Create database and dbuser:
 
 sudo mysql -u root
-CREATE USER 'support'@'localhost' IDENTIFIED BY 'password'
+CREATE USER '<username>'@'localhost' IDENTIFIED BY 'password'
 CREATE DATABASE hesk;
-GRANT ALL PRIVILEGES ON hesk.* TO 'support'@'localhost' 
+GRANT ALL PRIVILEGES ON hesk.* TO '<username>'@'localhost' 
 FLUSH PRIVILEGES;
 \q
 
@@ -56,7 +57,7 @@ nano /etc/apache2/sites-available/hesk.conf
 
 <VirtualHost*:80>
 DocumentRoot /var/www/html/hesk/
-ServerName myhesk.com -changed to ip add 10.10.11.114
+ServerName 10.10.11.114
 <Directory /var/www/html/hesk/>
 Options FollowSymLinks
 AllowOverride All
@@ -83,7 +84,7 @@ sudo reboot
 
 step [8] :run HESK script:
 
-http://10.10.11.114/install
+http://localhost/install
 
 Enter DB and DBUSER and create an administrative account to manage the support desk
 skip directly to settings 
