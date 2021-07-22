@@ -1,0 +1,99 @@
+0000000000000000000000000000000000000000000000000000000000000000000000
+    *** A how to guide to build the free php Hesk support desk ***
+0000000000000000000000000000000000000000000000000000000000000000000000
+
+-Project Hesk-
+
+step [1] :Build the vm in Hyper-v:
+
+$cred = Get-Credential
+Enter-PSSession -ComputerName 10.10.11.240 -Credential $cred
+New-VM -Name 6WHESK01 -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\6WHESK-TEST.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch Hyper-V Network
+Add-VMScsiController -VMName 6WHESK01
+Add-VMDvdDrive -VMName 6WHESK01 -ControllerNumber 1 -ControllerLocation 0 -Path C:\ClusterStorage\Volume1\_ISO\ubuntu-20.04.1-desktop-amd64.ISO
+Set-VMNetworkAdapterVlan -VMName 6WHESK01 -Access -VlanId 11
+Start-VM -Name 6WHESK01
+Exit-PSSession
+
+step [2] :Install Apache2:
+
+sudo apt-get install apache2
+a2enmod rewrite
+sudo service apache2 restart
+
+step [3] :Install PHP and extensions: 
+
+sudo apt install php libapache2-mod-php                         
+sudo systemctl restart apache2                               
+sudo apt install php-[extname] extname = (mysql, mbstring, curl, zip, gd and mcrypt)
+example: sudo apt install php-mbstring
+
+step [4] :Install mysql-server and create hesk DB and user for DB:
+
+sudo apt install mysql-server
+sudo mysql_secure_installation
+sudo systemctl status mysql
+
+step [5] :Create database and dbuser:
+
+sudo mysql -u root
+CREATE USER 'support'@'localhost' IDENTIFIED BY 'password'
+CREATE DATABASE hesk;
+GRANT ALL PRIVILEGES ON hesk.* TO 'support'@'localhost' 
+FLUSH PRIVILEGES;
+\q
+
+step [6] :Download Hesk, unpack hesk, create dirs, symbloic link and .heskconf file:
+ 
+Download hesk from website https://www/hesk.com/
+cd /home/supportadmin/Downloads/ 
+sudo mkdir /var/www/html/hesk
+sudo unzip hesk288.zip -d /var/www/html/hesk/
+touch /etc/apache2/sites-available/hesk.conf
+ln -s /etc/apache2/sites-available/hesk.conf /etc/apache2/sites-enabled/hesk.conf
+nano /etc/apache2/sites-available/hesk.conf
+
+
+<VirtualHost*:80>
+DocumentRoot /var/www/html/hesk/
+ServerName myhesk.com -changed to ip add 10.10.11.114
+<Directory /var/www/html/hesk/>
+Options FollowSymLinks
+AllowOverride All
+Order allow,deny
+allow from all
+</Directory>
+ErrorLog /var/log/apache2/your-domain.com-error_log
+CustomLog /var/log/apache2/your-domain.com-access_log common
+</VirtualHost>
+
+
+
+step [7] :restart apache2 service and assign permissions: 
+sudo service apache2 restart
+
+if error cd /etc/apache2 & run apache2ctl configtest
+ 
+sudo chown -R www-data:www-data /var/www/html/hesk/
+sudo chmod 7775 /var/www/html/hesk
+
+sudo apt-get update
+sudo apt-get upgrade
+sudo reboot
+
+step [8] :run HESK script:
+
+http://10.10.11.114/install
+
+Enter DB and DBUSER and create an administrative account to manage the support desk
+skip directly to settings 
+
+step [9] :remove install directory and restart apache2 service:
+
+cd /var/www/html/hesk/
+ls -l | grep install
+sudo rm -rf install/
+sudo service apache2 restart
+
+
+0000000000000000000000000000000000000000000000000000000000000000000000
