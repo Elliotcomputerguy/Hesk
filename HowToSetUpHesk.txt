@@ -6,11 +6,15 @@
 
 step [1] :Build the vm in Hyper-v:
 
+Change these values..
+<computername>
+<vmname>
+
 $cred = Get-Credential
 Enter-PSSession -ComputerName <computername> -Credential $cred
-New-VM -Name <vmname> -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\6WHESK-TEST.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch "switchname"
+New-VM -Name <vmname> -MemoryStartupBytes 2GB -NewVHDPath C:\ClusterStorage\Volume1\<vmname>.vhdx -NewVHDSizeBytes 80GB -Generation 2 -Switch "switchname"
 Add-VMScsiController -VMName <vmname>
-Add-VMDvdDrive -VMName 6WHESK01 -ControllerNumber 1 -ControllerLocation 0 -Path C:\ClusterStorage\Volume1\_ISO\ubuntu-20.04.1-desktop-amd64.ISO
+Add-VMDvdDrive -VMName <vmname> -ControllerNumber 1 -ControllerLocation 0 -Path C:\ClusterStorage\Volume1\_ISO\ubuntu-20.04.1-desktop-amd64.ISO
 Set-VMNetworkAdapterVlan -VMName <vmname> -Access -VlanId <id>
 Start-VM -Name <vmname>
 Exit-PSSession
@@ -54,10 +58,12 @@ touch /etc/apache2/sites-available/hesk.conf
 ln -s /etc/apache2/sites-available/hesk.conf /etc/apache2/sites-enabled/hesk.conf
 nano /etc/apache2/sites-available/hesk.conf
 
+change below value 
+<localhost = you local ip>
 
 <VirtualHost*:80>
 DocumentRoot /var/www/html/hesk/
-ServerName 10.10.11.114
+ServerName <localhost>
 <Directory /var/www/html/hesk/>
 Options FollowSymLinks
 AllowOverride All
@@ -67,8 +73,6 @@ allow from all
 ErrorLog /var/log/apache2/your-domain.com-error_log
 CustomLog /var/log/apache2/your-domain.com-access_log common
 </VirtualHost>
-
-
 
 step [7] :restart apache2 service and assign permissions: 
 sudo service apache2 restart
